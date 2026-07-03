@@ -51,4 +51,23 @@ find /workspaces -name ".git" -type d 2>/dev/null | while read -r GIT_DIR; do
   fi
 done
 
+# Provision the "learn" skill (student-friendly two-tier code walkthroughs via /learn)
+echo "[dotfiles] Provisioning learn skill..."
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_SRC="$DOTFILES_DIR/skills/learn"
+SKILL_LINK=~/.claude/skills/learn
+mkdir -p ~/.claude/skills
+if [ -L "$SKILL_LINK" ]; then
+  if [ "$(readlink "$SKILL_LINK")" = "$SKILL_SRC" ]; then
+    echo "[dotfiles] learn skill already linked."
+  else
+    echo "[dotfiles] Warning: $SKILL_LINK is a symlink to something else ($(readlink "$SKILL_LINK")). Leaving it untouched."
+  fi
+elif [ -e "$SKILL_LINK" ]; then
+  echo "[dotfiles] Warning: $SKILL_LINK already exists and is not managed by dotfiles. Leaving it untouched."
+else
+  ln -s "$SKILL_SRC" "$SKILL_LINK"
+  echo "[dotfiles] Linked $SKILL_LINK -> $SKILL_SRC"
+fi
+
 echo "[dotfiles] Done."
