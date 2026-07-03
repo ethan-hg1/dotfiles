@@ -106,7 +106,15 @@ new target or topic (e.g. a different file/function, or the student
 changed subjects).
 
 When a new file is needed, write it to
-`/workspaces/dotfiles/.claude-docs/<timestamp>-learnlog-<slug>.md`, where:
+`<project-root>/.claude-docs/<timestamp>-learnlog-<slug>.md`, where:
+
+- `<project-root>` is the root of the repo currently being worked in (the
+  directory containing `.git`, found by walking up from the current
+  working directory — every repo in the codespace already has a
+  `.claude-docs/` scratch dir created there by dotfiles install). If the
+  target file lives in a different repo than the current working
+  directory, prefer the repo containing the target file. Create
+  `.claude-docs/` if it is somehow missing.
 
 - `<timestamp>` is a human-readable local timestamp with the year dropped,
   generated via `date +%b-%d_%I-%M%p` (e.g. `Jul-03_06-16PM`).
