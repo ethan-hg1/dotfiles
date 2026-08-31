@@ -32,6 +32,27 @@ if [ ! -f ~/.claude/settings.json ]; then
 EOF
 fi
 
+# Write global instruction not to add a Co-Authored-By trailer to git commits.
+# GitHub resolves the default noreply@anthropic.com trailer to a real account
+# (github.com/claude) and lists it as a contributor on every repo, which isn't
+# wanted. Backed defense-in-depth by .claude/hooks/block-coauthor.sh in repos
+# that have it, but this instruction is what makes it apply everywhere.
+if [ ! -f ~/.claude/CLAUDE.md ]; then
+  echo "[dotfiles] Writing global CLAUDE.md (no co-author trailer on commits)..."
+  mkdir -p ~/.claude
+  cat > ~/.claude/CLAUDE.md << 'EOF'
+# Global instructions
+
+## Git commits: no Co-Authored-By trailer
+
+Never append a `Co-Authored-By: Claude ... <noreply@anthropic.com>` (or any Anthropic-model)
+trailer to git commit messages, in this or any other repository. GitHub resolves that email to
+a real account (`github.com/claude`) and credits it as a contributor on the repo's Contributors
+page, which is not desired. This overrides the default commit-message behavior otherwise
+described for git commits.
+EOF
+fi
+
 # Create .claude-docs/ inside every git repo under /workspaces
 # Uses .git/info/exclude so it is ignored locally without touching global git config
 echo "[dotfiles] Creating .claude-docs in workspaces..."
