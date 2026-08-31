@@ -12,6 +12,9 @@ On every new codespace, GitHub clones this repo to `~/dotfiles` and runs `instal
   that repo's local `.git/info/exclude` so it's never accidentally committed
 - Provisions a `learn` skill (`/learn`) into every codespace — a student-friendly, two-tier
   code walkthrough tool, symlinked from this repo so it stays in sync on `git pull`
+- Writes a global `~/.claude/CLAUDE.md` instructing Claude not to add a `Co-Authored-By`
+  trailer to git commits — GitHub resolves the default trailer to a real account
+  (`github.com/claude`) and lists it as a contributor on every repo, which isn't wanted
 
 ## First steps after a new codespace opens
 
