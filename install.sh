@@ -22,14 +22,40 @@ EOF
 fi
 
 # Write default Claude Code settings (theme, etc.)
+# "attribution" with empty strings disables Claude Code's built-in attribution:
+# "pr" hides the "Generated with Claude Code" footer on pull request bodies,
+# "commit" hides the Co-Authored-By trailer on commits.
 if [ ! -f ~/.claude/settings.json ]; then
   echo "[dotfiles] Writing default Claude Code settings..."
   mkdir -p ~/.claude
   cat > ~/.claude/settings.json << 'EOF'
 {
-  "theme": "dark"
+  "theme": "dark",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
 EOF
+else
+  # Existing settings file: merge the attribution key in, preserving everything else.
+  if command -v jq &>/dev/null; then
+    SETTINGS_TMP="$(mktemp)"
+    if jq '.attribution = ((.attribution // {}) + {commit: "", pr: ""})' ~/.claude/settings.json > "$SETTINGS_TMP"; then
+      if cmp -s "$SETTINGS_TMP" ~/.claude/settings.json; then
+        rm -f "$SETTINGS_TMP"
+        echo "[dotfiles] Claude Code attribution already disabled."
+      else
+        mv "$SETTINGS_TMP" ~/.claude/settings.json
+        echo "[dotfiles] Disabled commit/PR attribution in existing ~/.claude/settings.json"
+      fi
+    else
+      rm -f "$SETTINGS_TMP"
+      echo "[dotfiles] Warning: ~/.claude/settings.json isn't valid JSON. Leaving it untouched."
+    fi
+  else
+    echo "[dotfiles] Warning: jq not found; couldn't disable attribution in existing ~/.claude/settings.json."
+  fi
 fi
 
 # Write global instruction not to add a Co-Authored-By trailer to git commits.
@@ -50,6 +76,21 @@ trailer to git commit messages, in this or any other repository. GitHub resolves
 a real account (`github.com/claude`) and credits it as a contributor on the repo's Contributors
 page, which is not desired. This overrides the default commit-message behavior otherwise
 described for git commits.
+EOF
+fi
+
+# Append the pull-request rule to the global CLAUDE.md if it isn't there yet
+# (so codespaces with an existing file gain it without being overwritten).
+PR_RULE_HEADING='## Pull requests: no "Generated with Claude Code" footer'
+if ! grep -qF "$PR_RULE_HEADING" ~/.claude/CLAUDE.md 2>/dev/null; then
+  echo "[dotfiles] Adding PR attribution rule to global CLAUDE.md..."
+  cat >> ~/.claude/CLAUDE.md << 'EOF'
+
+## Pull requests: no "Generated with Claude Code" footer
+
+Never add a "🤖 Generated with [Claude Code](https://claude.com/claude-code)" footer, or any
+other Claude/Anthropic attribution, to pull request titles or descriptions, in this or any other
+repository. This overrides the default pull-request behavior otherwise described for PRs.
 EOF
 fi
 
